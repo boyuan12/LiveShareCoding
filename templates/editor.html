@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Editor
+{% endblock %}
+
+{% block main %}
+    <style type="text/css" media="screen">
+        #editor {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        #main{
+            margin-top: 100vh;
+        }
+    </style>
+    <div id="editor">{{ s[1] }}</div>
+    <script src="https://pagecdn.io/lib/ace/1.4.12/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://cdn.socket.io/socket.io-1.0.0.js"></script>
+    <!-- Ace Editor -->
+    <script>
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.session.setMode("ace/mode/javascript");
+    </script>
+
+    <!-- Socket -->
+    <script>
+        var socket = io.connect(location.protocol + "//" + document.domain + ":" + location.port);
+        socket.on("connect", () => {
+            document.getElementById("editor").onkeyup = () => {
+                socket.emit("code modified", {"code": editor.getValue(), "id": "{{ s[3] }}"})
+            }
+        })
+
+
+        socket.on("modify code", data => {
+            if (data.id === "{{ s[3] }}" && data.user_id != "{{ user_id }}") {
+                console.log(data.code, data.user_id);
+                // editor.setValue(data.code, -1)
+                editor.setValue(data.code, 1)
+            }
+        })
+    </script>
+
+    <div id="main">
+        <div class="row">
+            <div class="col-6">
+                <h3>Inputs</h3>
+                <textarea cols="30" rows="5"></textarea>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
